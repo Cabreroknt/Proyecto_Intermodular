@@ -1,45 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="15.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="dam.code.controller.AdminController" style="-fx-background-color: #ffffff;">
+<VBox spacing="15.0" prefWidth="900.0" prefHeight="650.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dam.code.controller.AdminController" style="-fx-background-color: #f4f7f9;">
+
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <HBox alignment="CENTER_LEFT" spacing="20">
-        <Label text="PANEL DE ADMINISTRACIÓN" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a3c5a;"/>
+    <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #1a3c5a; -fx-padding: 15; -fx-background-radius: 10;">
+        <Label text="NAVIGARE - PANEL DE CONTROL" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
         <Region HBox.hgrow="ALWAYS" />
-        <Button text="Cerrar Sesión" onAction="#handleCerrarSesion" style="-fx-background-color: #d9534f; -fx-text-fill: white;"/>
+        <Button text="Cerrar Sesión" onAction="#handleCerrarSesion"
+                style="-fx-background-color: #d9534f; -fx-text-fill: white; -fx-font-weight: bold;"/>
     </HBox>
 
-    <Separator/>
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #ddd; -fx-border-radius: 10;">
 
-    <HBox spacing="15">
-        <VBox spacing="10" HBox.hgrow="ALWAYS">
-            <Label text="🚢 Gestión de Buques" style="-fx-font-weight: bold;"/>
-            <TableView fx:id="tablaBuques" prefHeight="200">
-                <columns>
-                    <TableColumn fx:id="colIdBuque" text="ID" prefWidth="40"/>
-                    <TableColumn fx:id="colNombreBuque" text="Nombre" prefWidth="120"/>
-                    <TableColumn fx:id="colEstadoBuque" text="Estado" prefWidth="100"/>
-                </columns>
-            </TableView>
-            <Button text="+ Añadir Buque" onAction="#handleNuevoBuque" maxWidth="Infinity" style="-fx-base: #5cb85c;"/>
-        </VBox>
+        <Tab text="🚢 Flota y Personal">
+            <HBox spacing="15" style="-fx-padding: 15;">
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Buques en el Sistema" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TableView fx:id="tablaBuques" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colIdBuque" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colNombreBuque" text="Nombre" prefWidth="150"/>
+                            <TableColumn fx:id="colEstadoBuque" text="Estado" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                    <Button text="+ Añadir Buque" onAction="#handleNuevoBuque" maxWidth="Infinity"
+                            style="-fx-background-color: #5cb85c; -fx-text-fill: white;"/>
+                </VBox>
 
-        <VBox spacing="10" HBox.hgrow="ALWAYS">
-            <Label text="👤 Gestión de Tripulantes" style="-fx-font-weight: bold;"/>
-            <TableView fx:id="tablaTripulantes" prefHeight="200">
-                <columns>
-                    <TableColumn fx:id="colIdTrip" text="ID" prefWidth="40"/>
-                    <TableColumn fx:id="colNombreTrip" text="Nombre" prefWidth="120"/>
-                    <TableColumn fx:id="colRolTrip" text="Rol" prefWidth="100"/>
-                </columns>
-            </TableView>
-            <Button text="+ Añadir Tripulante" onAction="#handleNuevoTripulante" maxWidth="Infinity" style="-fx-base: #5bc0de;"/>
-        </VBox>
-    </HBox>
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Personal Registrado" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TableView fx:id="tablaTripulantes" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colIdTrip" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colNombreTrip" text="Nombre" prefWidth="150"/>
+                            <TableColumn fx:id="colRolTrip" text="Rol" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                    <Button text="+ Registrar Tripulante" onAction="#handleNuevoTripulante" maxWidth="Infinity"
+                            style="-fx-background-color: #5bc0de; -fx-text-fill: white;"/>
+                </VBox>
+            </HBox>
+        </Tab>
+
+        <Tab text="📍 Rutas y Viajes">
+            <VBox spacing="15" style="-fx-padding: 15;">
+                <HBox spacing="15" VBox.vgrow="ALWAYS">
+
+                    <VBox spacing="10" prefWidth="400">
+                        <Label text="Catálogo de Rutas" style="-fx-font-weight: bold;"/>
+                        <TableView fx:id="tablaRutas" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colOrigen" text="Origen" prefWidth="130"/>
+                                <TableColumn fx:id="colDestino" text="Destino" prefWidth="130"/>
+                                <TableColumn fx:id="colDistancia" text="Distancia (Km)" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                        <Button text="+ Crear Nueva Ruta" onAction="#handleNuevaRuta" maxWidth="Infinity"
+                                style="-fx-background-color: #f0ad4e; -fx-text-fill: white;"/>
+                    </VBox>
+
+                    <VBox spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Viajes Asignados (Logística)" style="-fx-font-weight: bold;"/>
+                        <TableView fx:id="tablaViajes" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colViajeBarco" text="Buque" prefWidth="120"/>
+                                <TableColumn fx:id="colViajeRuta" text="Ruta" prefWidth="180"/>
+                                <TableColumn fx:id="colViajeFecha" text="Fecha Salida" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                        <Button text="⚓ ASIGNAR VIAJE A BUQUE" onAction="#handleAsignarViaje" maxWidth="Infinity"
+                                style="-fx-background-color: #337ab7; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </Tab>
+
+    </TabPane>
 </VBox>
