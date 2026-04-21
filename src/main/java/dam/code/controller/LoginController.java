@@ -27,6 +27,7 @@ public class LoginController {
     private TripulanteService tripulanteService;
 
     // --- MÉTODOS DE INYECCIÓN ---
+    // Vitales para que el Main y los otros paneles pasen los servicios de vuelta
     public void setUsuarioService(UsuarioService service) { this.usuarioService = service; }
     public void setBuqueService(BuqueService service) { this.buqueService = service; }
     public void setTripulanteService(TripulanteService service) { this.tripulanteService = service; }
@@ -41,28 +42,31 @@ public class LoginController {
             return;
         }
 
+        if (usuarioService == null) {
+            mostrarAlerta("Error Crítico", "El sistema no ha inicializado los servicios de base de datos.");
+            return;
+        }
+
         try {
-            // Intentamos el login a través del servicio
             Usuario usuario = usuarioService.login(user, pass);
 
             if (usuario != null) {
-                System.out.println("Login correcto: " + usuario.getUsername() + " [Rol: " + usuario.getRol() + "]");
+                System.out.println("Acceso concedido: " + usuario.getUsername() + " (" + usuario.getRol() + ")");
                 redirigirSegunRol(usuario, event);
             } else {
                 mostrarAlerta("Acceso Denegado", "Usuario o contraseña incorrectos.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            mostrarAlerta("Error de Servidor", "No se pudo conectar: " + e.getMessage());
+            mostrarAlerta("Error de Servidor", "Error al conectar con la base de datos: " + e.getMessage());
         }
     }
 
     private void redirigirSegunRol(Usuario usuario, ActionEvent event) throws IOException {
         String rutaFxml = "";
-
-        // Normalizamos el rol a mayúsculas para evitar errores de escritura
         String rol = usuario.getRol().toUpperCase();
 
+        // 1. Selección de vista según el rol de la DB
         switch (rol) {
             case "ADMIN":
                 rutaFxml = "/view/AdminView.fxml";
@@ -82,7 +86,8 @@ public class LoginController {
         Parent root = loader.load();
         Object controller = loader.getController();
 
-        // --- INYECCIÓN DINÁMICA DE SERVICIOS Y DATOS ---
+        // 2. REPARTO DE SERVICIOS (Inyección de dependencias)
+        // Esto evita que al cerrar sesión los servicios se vuelvan null
 
         if (controller instanceof AdminController adminCtrl) {
             adminCtrl.setBuqueService(buqueService);
@@ -90,19 +95,21 @@ public class LoginController {
             adminCtrl.setUsuarioService(usuarioService);
         }
         else if (controller instanceof CapitanController capCtrl) {
-            // Pasamos el servicio de buques y el usuario logueado
             capCtrl.setBuqueService(buqueService);
             capCtrl.setUsuarioService(usuarioService);
             capCtrl.setUsuarioLogueado(usuario);
         }
         else if (controller instanceof TripulanteController tripuCtrl) {
+            // El tripulante necesita los servicios para poder ver datos y cerrar sesión
+            tripuCtrl.setBuqueService(buqueService);
+            tripuCtrl.setUsuarioService(usuarioService);
             tripuCtrl.setUsuarioLogueado(usuario);
         }
 
-        // Configurar y mostrar la nueva escena
+        // 3. Mostrar la nueva ventana
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
-        stage.setTitle("Navigare - Panel de " + rol);
+        stage.setTitle("Navigare - " + rol);
         stage.centerOnScreen();
         stage.show();
     }

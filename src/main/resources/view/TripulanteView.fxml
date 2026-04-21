@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="20.0" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dam.code.controller.TripulanteController" style="-fx-background-color: #f0f4f7;">
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <Label fx:id="lblBienvenida" text="Panel de Tripulante" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <Separator/>
+
+    <VBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: #ddd; -fx-border-radius: 10;">
+        <Label text="Información de tu perfil:" style="-fx-font-weight: bold;"/>
+        <Label fx:id="lblDetalles" text="Cargando detalles..." />
+    </VBox>
+
+    <Region VBox.vgrow="ALWAYS" />
+
+    <Button text="Cerrar Sesión" onAction="#handleCerrarSesion"
+            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+</VBox>
