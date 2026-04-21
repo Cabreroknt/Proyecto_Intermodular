@@ -26,10 +26,10 @@ public class LoginController {
     private BuqueService buqueService;
     private TripulanteService tripulanteService;
 
-    // Métodos para recibir los servicios desde el Main
-    public void setUsuarioService(UsuarioService s) { this.usuarioService = s; }
-    public void setBuqueService(BuqueService s) { this.buqueService = s; }
-    public void setTripulanteService(TripulanteService s) { this.tripulanteService = s; }
+    // --- MÉTODOS DE INYECCIÓN ---
+    public void setUsuarioService(UsuarioService service) { this.usuarioService = service; }
+    public void setBuqueService(BuqueService service) { this.buqueService = service; }
+    public void setTripulanteService(TripulanteService service) { this.tripulanteService = service; }
 
     @FXML
     private void handleLogin(ActionEvent event) {
@@ -37,60 +37,81 @@ public class LoginController {
         String pass = txtPassword.getText().trim();
 
         if (user.isEmpty() || pass.isEmpty()) {
-            mostrarAlerta("Campos vacíos", "Introduce tus credenciales.");
+            mostrarAlerta("Campos vacíos", "Por favor, introduce tus credenciales.");
             return;
         }
 
         try {
+            // Intentamos el login a través del servicio
             Usuario usuario = usuarioService.login(user, pass);
 
             if (usuario != null) {
-                System.out.println("Login ok: " + usuario.getRol());
+                System.out.println("Login correcto: " + usuario.getUsername() + " [Rol: " + usuario.getRol() + "]");
                 redirigirSegunRol(usuario, event);
             } else {
-                mostrarAlerta("Error", "Usuario o contraseña incorrectos.");
+                mostrarAlerta("Acceso Denegado", "Usuario o contraseña incorrectos.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            mostrarAlerta("Error de conexión", "No se pudo conectar con la base de datos.");
+            mostrarAlerta("Error de Servidor", "No se pudo conectar: " + e.getMessage());
         }
     }
 
     private void redirigirSegunRol(Usuario usuario, ActionEvent event) throws IOException {
-        String rutaFxml = switch (usuario.getRol().toUpperCase()) {
-            case "ADMIN" -> "/view/AdminView.fxml";
-            case "CAPITAN" -> "/view/CapitanView.fxml";
-            case "TRIPULANTE" -> "/view/TripulanteView.fxml";
-            default -> "";
-        };
+        String rutaFxml = "";
+
+        // Normalizamos el rol a mayúsculas para evitar errores de escritura
+        String rol = usuario.getRol().toUpperCase();
+
+        switch (rol) {
+            case "ADMIN":
+                rutaFxml = "/view/AdminView.fxml";
+                break;
+            case "CAPITAN":
+                rutaFxml = "/view/CapitanView.fxml";
+                break;
+            case "TRIPULANTE":
+                rutaFxml = "/view/TripulanteView.fxml";
+                break;
+            default:
+                mostrarAlerta("Error de Configuración", "El rol '" + rol + "' no tiene una vista asignada.");
+                return;
+        }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource(rutaFxml));
         Parent root = loader.load();
         Object controller = loader.getController();
 
-        // --- INYECCIÓN CRÍTICA PARA CADA ROL ---
-        if (controller instanceof AdminController c) {
-            c.setBuqueService(buqueService);
-            c.setTripulanteService(tripulanteService);
-            c.setUsuarioService(usuarioService); // Para que el admin pueda volver al login
+        // --- INYECCIÓN DINÁMICA DE SERVICIOS Y DATOS ---
+
+        if (controller instanceof AdminController adminCtrl) {
+            adminCtrl.setBuqueService(buqueService);
+            adminCtrl.setTripulanteService(tripulanteService);
+            adminCtrl.setUsuarioService(usuarioService);
         }
-        else if (controller instanceof CapitanController c) {
-            c.setBuqueService(buqueService);
-            c.setUsuarioLogueado(usuario); // El capitán necesita saber su ID de buque
-            // Si tu CapitanController también tiene setUsuarioService, añádelo aquí
+        else if (controller instanceof CapitanController capCtrl) {
+            // Pasamos el servicio de buques y el usuario logueado
+            capCtrl.setBuqueService(buqueService);
+            capCtrl.setUsuarioService(usuarioService);
+            capCtrl.setUsuarioLogueado(usuario);
         }
-        else if (controller instanceof TripulanteController c) {
-            c.setUsuarioLogueado(usuario);
+        else if (controller instanceof TripulanteController tripuCtrl) {
+            tripuCtrl.setUsuarioLogueado(usuario);
         }
 
+        // Configurar y mostrar la nueva escena
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
-        stage.setTitle("Navigare - " + usuario.getRol());
+        stage.setTitle("Navigare - Panel de " + rol);
+        stage.centerOnScreen();
         stage.show();
     }
 
-    private void mostrarAlerta(String t, String m) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setTitle(t); a.setHeaderText(null); a.setContentText(m); a.showAndWait();
+    private void mostrarAlerta(String titulo, String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 }
