@@ -4,8 +4,10 @@ import dam.code.models.Usuario;
 import dam.code.service.BuqueService;
 import dam.code.service.TripulanteService;
 import dam.code.service.UsuarioService;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -24,99 +26,71 @@ public class LoginController {
     private BuqueService buqueService;
     private TripulanteService tripulanteService;
 
-    // --- MÉTODOS PARA INYECCIÓN DE SERVICIOS (Desde el Main) ---
+    // Métodos para recibir los servicios desde el Main
+    public void setUsuarioService(UsuarioService s) { this.usuarioService = s; }
+    public void setBuqueService(BuqueService s) { this.buqueService = s; }
+    public void setTripulanteService(TripulanteService s) { this.tripulanteService = s; }
 
-    public void setUsuarioService(UsuarioService service) { this.usuarioService = service; }
-    public void setBuqueService(BuqueService service) { this.buqueService = service; }
-    public void setTripulanteService(TripulanteService service) { this.tripulanteService = service; }
-
-    /**
-     * Acción del botón "Entrar" del formulario de login
-     */
     @FXML
-    private void handleLogin() {
+    private void handleLogin(ActionEvent event) {
         String user = txtUsuario.getText().trim();
         String pass = txtPassword.getText().trim();
 
-        // Validación simple de campos
         if (user.isEmpty() || pass.isEmpty()) {
-            mostrarAlerta("Campos vacíos", "Por favor, introduce usuario y contraseña.");
+            mostrarAlerta("Campos vacíos", "Introduce tus credenciales.");
             return;
         }
 
         try {
-            // 1. Consultar a la base de datos a través del servicio
-            Usuario usuarioLogueado = usuarioService.login(user, pass);
+            Usuario usuario = usuarioService.login(user, pass);
 
-            if (usuarioLogueado != null) {
-                // 2. Si las credenciales son correctas, redirigir según su ROL
-                redirigirSegunRol(usuarioLogueado);
+            if (usuario != null) {
+                System.out.println("Login ok: " + usuario.getRol());
+                redirigirSegunRol(usuario, event);
             } else {
-                mostrarAlerta("Acceso denegado", "Usuario o contraseña incorrectos.");
+                mostrarAlerta("Error", "Usuario o contraseña incorrectos.");
             }
         } catch (Exception e) {
-            mostrarAlerta("Error de conexión", "No se pudo conectar con la base de datos.");
             e.printStackTrace();
+            mostrarAlerta("Error de conexión", "No se pudo conectar con la base de datos.");
         }
     }
 
-    /**
-     * Gestiona el cambio de ventana y la inyección de datos según la jerarquía
-     */
-    private void redirigirSegunRol(Usuario usuario) throws IOException {
-        String fxmlDoc = "";
+    private void redirigirSegunRol(Usuario usuario, ActionEvent event) throws IOException {
+        String rutaFxml = switch (usuario.getRol().toUpperCase()) {
+            case "ADMIN" -> "/view/AdminView.fxml";
+            case "CAPITAN" -> "/view/CapitanView.fxml";
+            case "TRIPULANTE" -> "/view/TripulanteView.fxml";
+            default -> "";
+        };
 
-        // Determinamos qué vista cargar basándonos en el rol de la DB
-        switch (usuario.getRol().toUpperCase()) {
-            case "ADMIN":
-                fxmlDoc = "/view/AdminView.fxml";
-                break;
-            case "CAPITAN":
-                fxmlDoc = "/view/CapitanView.fxml";
-                break;
-            case "TRIPULANTE":
-                fxmlDoc = "/view/TripulanteView.fxml";
-                break;
-            default:
-                mostrarAlerta("Error de Rol", "El usuario no tiene un rol válido asignado.");
-                return;
-        }
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlDoc));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(rutaFxml));
         Parent root = loader.load();
+        Object controller = loader.getController();
 
-        // --- INYECCIÓN DINÁMICA SEGÚN EL CONTROLADOR DESTINO ---
-
-        if (usuario.getRol().equals("ADMIN")) {
-            AdminController adminCtrl = loader.getController();
-            adminCtrl.setBuqueService(buqueService);
-            adminCtrl.setTripulanteService(tripulanteService);
-            // El admin no suele necesitar su propio objeto usuario porque manda en todo
+        // --- INYECCIÓN CRÍTICA PARA CADA ROL ---
+        if (controller instanceof AdminController c) {
+            c.setBuqueService(buqueService);
+            c.setTripulanteService(tripulanteService);
+            c.setUsuarioService(usuarioService); // Para que el admin pueda volver al login
         }
-        else if (usuario.getRol().equals("CAPITAN")) {
-            CapitanController capCtrl = loader.getController();
-            capCtrl.setBuqueService(buqueService);
-            // PASAMOS EL USUARIO: El capitán lo necesita para saber su id_buque
-            capCtrl.setUsuarioLogueado(usuario);
+        else if (controller instanceof CapitanController c) {
+            c.setBuqueService(buqueService);
+            c.setUsuarioLogueado(usuario); // El capitán necesita saber su ID de buque
+            // Si tu CapitanController también tiene setUsuarioService, añádelo aquí
         }
-        else if (usuario.getRol().equals("TRIPULANTE")) {
-            TripulanteController tripuCtrl = loader.getController();
-            // PASAMOS EL USUARIO: El tripulante lo necesita para ver su propia info
-            tripuCtrl.setUsuarioLogueado(usuario);
+        else if (controller instanceof TripulanteController c) {
+            c.setUsuarioLogueado(usuario);
         }
 
-        // Ejecutar el cambio de escena en la ventana actual
-        Stage stage = (Stage) txtUsuario.getScene().getWindow();
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
-        stage.setTitle("Navigare - Panel de " + usuario.getRol());
+        stage.setTitle("Navigare - " + usuario.getRol());
         stage.show();
     }
 
-    private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+    private void mostrarAlerta(String t, String m) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle(t); a.setHeaderText(null); a.setContentText(m); a.showAndWait();
     }
 }

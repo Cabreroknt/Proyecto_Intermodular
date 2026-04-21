@@ -26,9 +26,9 @@ public class Main extends Application {
 
         // 3. Obtenemos el LoginController e INYECTAMOS los servicios
         LoginController controller = loader.getController();
-        controller.setUsuarioService(usuarioService);
-        controller.setBuqueService(buqueService);
-        controller.setTripulanteService(tripulanteService);
+        controller.setUsuarioService(new UsuarioService());
+        controller.setBuqueService(new BuqueService());
+        controller.setTripulanteService(new TripulanteService());
 
         // 4. Configuración estética (Estilo Williams: fija y limpia)
         stage.setTitle("Navigare - Sistema de Gestión Marítima");
