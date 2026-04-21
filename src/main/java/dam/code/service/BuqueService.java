@@ -1,24 +1,50 @@
 package dam.code.service;
 
+import dam.code.dao.BuqueDAO;
+import dam.code.dao.impl.BuqueDAOImpl;
+import dam.code.exceptions.BuqueException;
 import dam.code.models.Buque;
-import java.util.ArrayList;
-import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class BuqueService {
 
-    // metodo faltante a AdminController
-    public List<Buque> obtenerTodosLosBuques() {
-        List<Buque> listaMock = new ArrayList<>();
+    // Instanciamos la implementación como en PeliculaService
+    private final BuqueDAO buqueDAO = new BuqueDAOImpl();
 
-        // Barcos de prueba (el orden debe coincidir con el constructor de Buque)
-        // Suponiendo: id, nombre, modeloId, capacidad, estado
+    /**
+     * Obtiene los buques en formato ObservableList para la UI
+     */
+    public ObservableList<Buque> obtenerTodosLosBuques() throws BuqueException {
+        // Transformamos la List del DAO en ObservableList
+        return FXCollections.observableArrayList(buqueDAO.listar());
+    }
 
-        //---------PLACE HOLDER DEBE BORRARSE AL FINALIZAR EL PROGRAMA-----------------//
-        listaMock.add(new Buque(1, "Estrella del Mar", 101, 500, "En puerto"));
-        listaMock.add(new Buque(2, "Poseidón", 102, 1200, "En navegación"));
-        listaMock.add(new Buque(3, "Titán", 101, 800, "Mantenimiento"));
-        //---------PLACE HOLDER DEBE BORRARSE AL FINALIZAR EL PROGRAMA-----------------//
+    /**
+     * Registra un buque con validaciones previas
+     */
+    public void agregarBuque(Buque buque) throws BuqueException {
+        validarBuque(buque);
+        buqueDAO.registrar(buque);
+    }
 
-        return listaMock;
+    /**
+     * Lógica de validación antes de ir a la DB
+     */
+    private void validarBuque(Buque buque) throws BuqueException {
+        if (buque.getNombre() == null || buque.getNombre().length() < 1) {
+            throw new BuqueException("El nombre del buque debe tener al menos 1 caracteres.");
+        }
+
+        if (buque.getEstado() == null) {
+            throw new BuqueException("El buque debe tener un estado asignado.");
+        }
+    }
+
+    /**
+     * Método para actualizar estado (útil para el Capitán)
+     */
+    public void actualizarEstadoBuque(int id, String nuevoEstado) throws BuqueException {
+        buqueDAO.actualizarEstado(id, nuevoEstado);
     }
 }

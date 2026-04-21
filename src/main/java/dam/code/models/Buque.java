@@ -1,24 +1,25 @@
 package dam.code.models;
 
+import dam.code.models.utils.EstadoBuque;
+
 public class Buque {
+
     private int id;
     private String nombre;
-    private int modeloId;
-    private int capacidad;
-    private String estado;
+    private EstadoBuque estado;
 
-    // 1. Constructor vacío
+    // Constructor vacío (obligatorio para frameworks y DAOs)
     public Buque() {
     }
 
-    // 2. Constructor lleno (El que necesita el Service)
-    public Buque(int id, String nombre, int modeloId, int capacidad, String estado) {
+    // Constructor con parámetros (útil para el registro)
+    public Buque(int id, String nombre, EstadoBuque estado) {
         this.id = id;
         this.nombre = nombre;
-        this.modeloId = modeloId;
-        this.capacidad = capacidad;
         this.estado = estado;
     }
+
+    // Getters y Setters (Cruciales para las tablas de JavaFX)
 
     public int getId() {
         return id;
@@ -36,27 +37,11 @@ public class Buque {
         this.nombre = nombre;
     }
 
-    public int getModeloId() {
-        return modeloId;
-    }
-
-    public void setModeloId(int modeloId) {
-        this.modeloId = modeloId;
-    }
-
-    public int getCapacidad() {
-        return capacidad;
-    }
-
-    public void setCapacidad(int capacidad) {
-        this.capacidad = capacidad;
-    }
-
-    public String getEstado() {
+    public EstadoBuque getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
+    public void setEstado(EstadoBuque estado) {
         this.estado = estado;
     }
 }

@@ -1,20 +1,29 @@
 package dam.code.controller;
 
+import dam.code.models.Usuario;
 import dam.code.service.BuqueService;
 import javafx.fxml.FXML;
 
 public class CapitanController {
 
-    private BuqueService service;
+    private Usuario usuarioLogueado;
+    private BuqueService buqueService;
 
-    // Metodo que "setea" el servicio desde el LoginController
+    // Este es el método que te falta
+    public void setUsuarioLogueado(Usuario usuario) {
+        this.usuarioLogueado = usuario;
+        System.out.println("Capitán al mando: " + usuario.getUsername() + " de buque ID: " + usuario.getIdBuque());
+
+        // Aquí podrías llamar a un método para cargar solo sus datos
+        // cargarDatosPropios();
+    }
+
     public void setBuqueService(BuqueService service) {
-        this.service = service;
-        // Aquí se puede llamar a cargar los datos específicos del capitán
+        this.buqueService = service;
     }
 
     @FXML
-    public void initialize() {
-        // Lógica inicial de la vista del capitán
+    public void handleCerrarSesion() {
+        // Lógica para volver al login si quieres
     }
 }

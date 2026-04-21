@@ -1,11 +1,15 @@
 package dam.code.controller;
 
+import dam.code.models.Usuario;
 import dam.code.service.BuqueService;
+import dam.code.service.TripulanteService;
+import dam.code.service.UsuarioService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -14,68 +18,105 @@ import java.io.IOException;
 public class LoginController {
 
     @FXML private TextField txtUsuario;
+    @FXML private PasswordField txtPassword;
 
-    // El servicio se suele inicializar o pasar desde el AppMain
-    private BuqueService buqueService = new BuqueService();
+    private UsuarioService usuarioService;
+    private BuqueService buqueService;
+    private TripulanteService tripulanteService;
 
+    // --- MÉTODOS PARA INYECCIÓN DE SERVICIOS (Desde el Main) ---
+
+    public void setUsuarioService(UsuarioService service) { this.usuarioService = service; }
+    public void setBuqueService(BuqueService service) { this.buqueService = service; }
+    public void setTripulanteService(TripulanteService service) { this.tripulanteService = service; }
+
+    /**
+     * Acción del botón "Entrar" del formulario de login
+     */
     @FXML
-    public void handleLogin() {
-        if (!validarCampos()) {
-            mostrarError("El campo de usuario es obligatorio");
+    private void handleLogin() {
+        String user = txtUsuario.getText().trim();
+        String pass = txtPassword.getText().trim();
+
+        // Validación simple de campos
+        if (user.isEmpty() || pass.isEmpty()) {
+            mostrarAlerta("Campos vacíos", "Por favor, introduce usuario y contraseña.");
             return;
         }
 
-        String user = txtUsuario.getText();
-
         try {
-            String fxmlPath = "";
-            String titulo = "";
+            // 1. Consultar a la base de datos a través del servicio
+            Usuario usuarioLogueado = usuarioService.login(user, pass);
 
-            if (user.equalsIgnoreCase("admin")) {
-                fxmlPath = "/view/AdminView.fxml";
-                titulo = "Panel de Administración";
-            } else if (user.equalsIgnoreCase("capitan")) {
-                fxmlPath = "/view/CapitanView.fxml";
-                titulo = "Panel del Capitán";
+            if (usuarioLogueado != null) {
+                // 2. Si las credenciales son correctas, redirigir según su ROL
+                redirigirSegunRol(usuarioLogueado);
             } else {
-                mostrarError("Usuario no reconocido");
-                return;
+                mostrarAlerta("Acceso denegado", "Usuario o contraseña incorrectos.");
             }
-
-            // CAMBIAR DE ESCENA
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent root = loader.load();
-
-            // Aquí es donde inyectas el service al siguiente controlador
-            if (user.equalsIgnoreCase("admin")) {
-                AdminController controller = loader.getController();
-                controller.setBuqueService(buqueService); // Le pasas el "motor"
-            } else {
-                CapitanController controller = loader.getController();
-                controller.setBuqueService(buqueService);
-            }
-
-            // Configurar y mostrar el Stage
-            Stage stage = (Stage) txtUsuario.getScene().getWindow();
-            stage.setTitle(titulo);
-            stage.setScene(new Scene(root));
-            // stage.setResizable(false); // fijar tamaño
-
-        } catch (IOException e) {
-            mostrarError("Error al cargar la vista: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarAlerta("Error de conexión", "No se pudo conectar con la base de datos.");
             e.printStackTrace();
         }
     }
 
-    private boolean validarCampos() {
-        return !txtUsuario.getText().isEmpty();
+    /**
+     * Gestiona el cambio de ventana y la inyección de datos según la jerarquía
+     */
+    private void redirigirSegunRol(Usuario usuario) throws IOException {
+        String fxmlDoc = "";
+
+        // Determinamos qué vista cargar basándonos en el rol de la DB
+        switch (usuario.getRol().toUpperCase()) {
+            case "ADMIN":
+                fxmlDoc = "/view/AdminView.fxml";
+                break;
+            case "CAPITAN":
+                fxmlDoc = "/view/CapitanView.fxml";
+                break;
+            case "TRIPULANTE":
+                fxmlDoc = "/view/TripulanteView.fxml";
+                break;
+            default:
+                mostrarAlerta("Error de Rol", "El usuario no tiene un rol válido asignado.");
+                return;
+        }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlDoc));
+        Parent root = loader.load();
+
+        // --- INYECCIÓN DINÁMICA SEGÚN EL CONTROLADOR DESTINO ---
+
+        if (usuario.getRol().equals("ADMIN")) {
+            AdminController adminCtrl = loader.getController();
+            adminCtrl.setBuqueService(buqueService);
+            adminCtrl.setTripulanteService(tripulanteService);
+            // El admin no suele necesitar su propio objeto usuario porque manda en todo
+        }
+        else if (usuario.getRol().equals("CAPITAN")) {
+            CapitanController capCtrl = loader.getController();
+            capCtrl.setBuqueService(buqueService);
+            // PASAMOS EL USUARIO: El capitán lo necesita para saber su id_buque
+            capCtrl.setUsuarioLogueado(usuario);
+        }
+        else if (usuario.getRol().equals("TRIPULANTE")) {
+            TripulanteController tripuCtrl = loader.getController();
+            // PASAMOS EL USUARIO: El tripulante lo necesita para ver su propia info
+            tripuCtrl.setUsuarioLogueado(usuario);
+        }
+
+        // Ejecutar el cambio de escena en la ventana actual
+        Stage stage = (Stage) txtUsuario.getScene().getWindow();
+        stage.setScene(new Scene(root));
+        stage.setTitle("Navigare - Panel de " + usuario.getRol());
+        stage.show();
     }
 
-    private void mostrarError(String message) {
+    private void mostrarAlerta(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        alert.setTitle(titulo);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setContentText(mensaje);
         alert.showAndWait();
     }
 }

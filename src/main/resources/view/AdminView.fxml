@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dam.code.controller.AdminController" style="-fx-background-color: #ffffff;">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="PANEL DE ADMINISTRACIÓN" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a3c5a;"/>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button text="Cerrar Sesión" onAction="#handleCerrarSesion" style="-fx-background-color: #d9534f; -fx-text-fill: white;"/>
+    </HBox>
+
+    <Separator/>
+
+    <HBox spacing="15">
+        <VBox spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="🚢 Gestión de Buques" style="-fx-font-weight: bold;"/>
+            <TableView fx:id="tablaBuques" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colIdBuque" text="ID" prefWidth="40"/>
+                    <TableColumn fx:id="colNombreBuque" text="Nombre" prefWidth="120"/>
+                    <TableColumn fx:id="colEstadoBuque" text="Estado" prefWidth="100"/>
+                </columns>
+            </TableView>
+            <Button text="+ Añadir Buque" onAction="#handleNuevoBuque" maxWidth="Infinity" style="-fx-base: #5cb85c;"/>
+        </VBox>
+
+        <VBox spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="👤 Gestión de Tripulantes" style="-fx-font-weight: bold;"/>
+            <TableView fx:id="tablaTripulantes" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colIdTrip" text="ID" prefWidth="40"/>
+                    <TableColumn fx:id="colNombreTrip" text="Nombre" prefWidth="120"/>
+                    <TableColumn fx:id="colRolTrip" text="Rol" prefWidth="100"/>
+                </columns>
+            </TableView>
+            <Button text="+ Añadir Tripulante" onAction="#handleNuevoTripulante" maxWidth="Infinity" style="-fx-base: #5bc0de;"/>
+        </VBox>
+    </HBox>
+</VBox>

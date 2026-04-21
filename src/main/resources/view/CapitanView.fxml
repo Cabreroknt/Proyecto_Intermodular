@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dam.code.controller.CapitanController" style="-fx-background-color: #f8f9fa;">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <VBox spacing="5">
+        <Label fx:id="lblBienvenida" text="Bienvenido, Capitán" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <Label text="Gestión de tripulación asignada" style="-fx-text-fill: #666;"/>
+    </VBox>
+
+    <TableView fx:id="tablaGestionBuques" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colNombre" text="Nombre Tripulante" prefWidth="150"/>
+            <TableColumn fx:id="colEstado" text="Cargo / Rol" prefWidth="150"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="✏️ Editar Datos" onAction="#handleEditarTripulante" style="-fx-padding: 8 15;"/>
+        <Button text="🚪 Salir" onAction="#handleCerrarSesion" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-padding: 8 15;"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dam.code.controller.LoginController" style="-fx-background-color: #f4f7f9;">
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
+    </padding>
+
+    <Label text="NAVIGARE" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1a3c5a;"/>
+    <Label text="Gestión de Flotas" style="-fx-text-fill: #555;"/>
+
+    <VBox spacing="10.0">
+        <Label text="Usuario:"/>
+        <TextField fx:id="txtUsuario" promptText="Nombre de usuario" style="-fx-padding: 8;"/>
+
+        <Label text="Contraseña:"/>
+        <PasswordField fx:id="txtPassword" promptText="Contraseña" style="-fx-padding: 8;"/>
+    </VBox>
+
+    <Button text="INICIAR SESIÓN" onAction="#handleLogin" maxWidth="Infinity"
+            style="-fx-background-color: #1a3c5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10; -fx-cursor: hand;"/>
+
+    <Label text="V 1.0 - Acceso Restringido" style="-fx-font-size: 10px; -fx-text-fill: #999;"/>
+</VBox>
